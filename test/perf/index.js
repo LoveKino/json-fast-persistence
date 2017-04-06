@@ -6,6 +6,7 @@ let Simply = require('./simplyReadAndWrite');
 let fs = require('fs');
 
 let writeFile = promisify(fs.writeFile);
+let readFile = promisify(fs.readFile);
 
 let {
     dsl
@@ -18,36 +19,47 @@ let {
 let log = console.log; // eslint-disable-line
 
 let simplyJsonPath = path.join(__dirname, './fixture/simply/index.json');
+let simplyLittleJsonPath = path.join(__dirname, './fixture/simply/little.json');
 
 // let fastJsonPath = path.join(__dirname, './fixture/fast/index.json');
 
 let set = method('set');
 
 let test = (way, filePath) => {
-    let t1 = new Date().getTime();
     let {
         get, update
     } = way(filePath);
+
+    timespan(readFile, 'readFile', [filePath, 'utf-8']);
+
     // read
-    return get().then((jsonData) => {
-        let t2 = new Date().getTime();
-        log(`get: time span ${t2 - t1}`);
-        let raw = JSON.stringify(jsonData);
-        let t3 = new Date().getTime();
-        log(`stringify: time span ${t3 - t2}`);
+    return timespan(get, 'get').then((jsonData) => {
+        let raw = timespan(JSON.stringify, 'stringify', [jsonData]);
         // write
-        return update(set('a', 10)).then(() => {
-            let t4 = new Date().getTime();
-            log(`update: time span ${t4 - t3}`);
-            return writeFile(filePath, raw, 'utf-8').then(() => {
-                let t5 = new Date().getTime();
-                log(`write: time span ${t5 - t4}`);
-                JSON.parse(raw);
-                let t6 = new Date().getTime();
-                log(`parse: time span ${t6 - t5}`);
+        return timespan(update, 'update', [set('a', 10)]).then(() => {
+            return timespan(writeFile, 'writeFile', [filePath, raw, 'utf-8']).then(() => {
+                timespan(JSON.parse, 'parse', [raw]);
             });
         });
     });
 };
 
-test(Simply, simplyJsonPath);
+let timespan = (f, prefix, args = []) => {
+    let t1 = new Date().getTime();
+
+    let ret = f(...args);
+
+    Promise.resolve(ret).then(() => {
+        let t2 = new Date().getTime();
+        log(`${prefix}: time span ${t2 - t1}`);
+    });
+
+    return ret;
+};
+
+log('180M json:');
+test(Simply, simplyJsonPath).then(() => {
+    log('----------------------');
+    log('little json:');
+    test(Simply, simplyLittleJsonPath);
+});
