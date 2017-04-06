@@ -3,10 +3,11 @@
 let store = require('./lib/store');
 
 let {
-    set
+    set, remove
 } = require('./lib/jsonOp');
 
 module.exports = {
     store,
-    set
+    set,
+    remove
 };

@@ -7,6 +7,8 @@ let {
 let path = require('path');
 let assert = require('assert');
 
+let del = require('del');
+
 const fixturePath = path.resolve(__dirname, '../fixture');
 
 describe('index', () => {
@@ -54,5 +56,36 @@ describe('index', () => {
                 }]);
             });
         });
+    });
+
+    it('default file', async() => {
+        let filePath = path.resolve(fixturePath, '3/index.json');
+        let scriptIndexPath = path.resolve(fixturePath, '3/__fast_script__index__/index.json');
+
+        await del([filePath, scriptIndexPath], {
+            force: true
+        });
+
+        let {
+            get
+        } = await store(filePath, null, {
+            'd': 1
+        });
+
+        let ret = await get();
+
+        assert.deepEqual(ret, {
+            'd': 1
+        });
+    });
+
+    it('repeat store', async() => {
+        let filePath = path.resolve(fixturePath, '4/index.json');
+        await store(filePath);
+        try {
+            await store(filePath);
+        } catch (err) {
+            assert.deepEqual(err.toString().indexOf('already build a store') !== -1, true);
+        }
     });
 });
