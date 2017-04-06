@@ -1,7 +1,7 @@
 'use strict';
 
 let {
-    store, set, remove
+    store, set, remove, arr
 } = require('../../../');
 
 let fs = require('fs');
@@ -16,7 +16,7 @@ let assert = require('assert');
 
 const fixturePath = path.resolve(__dirname, './fixture');
 
-describe('index', () => {
+describe('update', () => {
     it('update', () => {
         let file = path.resolve(fixturePath, '0/index.json');
 
@@ -115,6 +115,31 @@ describe('index', () => {
             a: {
                 d: 3
             }
+        });
+    });
+
+    it('arr', async() => {
+        let file = path.resolve(fixturePath, '4/index.json');
+
+        let {
+            update, get
+        } = await store(file);
+
+        await update(arr(
+            set('a', {
+                d: 3
+            }),
+
+            set('e', 100)
+        ));
+
+        let data = await get();
+
+        assert.deepEqual(data, {
+            a: {
+                d: 3
+            },
+            e: 100
         });
     });
 });
