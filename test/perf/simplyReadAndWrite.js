@@ -42,11 +42,12 @@ module.exports = (jsonFilePath) => {
         // read json from file
         return readFile(jsonFilePath, 'utf-8').then((jsonStr) => {
             return JSON.parse(jsonStr);
-        }).then((data) => {
-            curJson = data;
+        }).then(updateCurJson);
+    };
 
-            return curJson;
-        });
+    let updateCurJson = (data) => {
+        curJson = data;
+        return curJson;
     };
 
     return {
