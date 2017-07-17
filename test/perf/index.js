@@ -10,6 +10,11 @@ let {
     store
 } = require('../..');
 let fs = require('fs');
+/*
+let {
+    diff
+} = require('json-diff');
+*/
 
 let writeFile = promisify(fs.writeFile);
 let readFile = promisify(fs.readFile);
@@ -52,8 +57,11 @@ let testBottomPerf = async(filePath) => {
     let jsonData = timespan(JSON.parse, 'parse', [raw]);
 
     timespan(JSON.stringify, 'stringify', [jsonData]);
+    timespan(JSON.stringify, 'stringify-raw', [raw]);
 
     await timespan(writeFile, 'writeFile', [filePath, raw, 'utf-8']);
+
+    // await timespan(diff, 'diff-json', [jsonData, jsonData]);
 };
 
 let timespan = (f, prefix, args = []) => {
